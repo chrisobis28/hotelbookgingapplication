@@ -1,0 +1,404 @@
+openapi: '3.0.2'
+info:
+  title: Booking Siemens Application
+  description: API for managing Booking of Hotels for Siemens
+  version: '1.0'
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Hotel
+    description: Hotel specific API
+  - name: Room
+    description: Room specific API
+  - name: Reservation
+    description: Reservation specific API
+  - name: Feedback
+    description: Feedback specific API
+
+paths:
+  /hotel:
+    post:
+      tags:
+        - Hotel
+      summary: Populate a database from a list of Hotels
+      operationId: addHotel
+      description: Add Hotels to the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Hotel'
+      responses:
+        '201':
+          description: Hotel created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotel'
+        '400':
+          description: Bad Request - Hotel Format not admitted
+
+  /hotel/{hotelId}:
+    get:
+      tags:
+        - Hotel
+      summary: Gets the list of rooms given a specific hotel.
+      operationId: getHotelRooms
+      description: Retrieves all rooms of a hotel.
+      parameters:
+        - in: path
+          name: hotelId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '400':
+          description: Bad Request - Id not valid
+        '404':
+          description: Not Found - Hotel with the specified id doesn't exist
+
+    delete:
+      tags:
+        - Hotel
+      summary: Delete an instance of a Hotel
+      operationId: deleteHotel
+      description: Delete Hotel from the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Hotel deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad Request - No Hotel with such uuid exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /getHotelsInRadius/{radius}:
+    get:
+      tags:
+        - Hotel
+      summary: Get all hotels within a specified radius from the user's location
+      operationId: getAllHotelsNearby
+      description: Retrieves all hotels within a certain desired range
+      parameters:
+        - in: path
+          name: radius
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '400':
+          description: Bad Request - Radius not in correct format
+
+  /room:
+    post:
+      tags:
+        - Room
+      summary: Create a new instance of a Room
+      operationId: addRoom
+      description: For the Hotel to add Rooms to the platform.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+      responses:
+        '201':
+          description: Room created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          description: Bad Request - Hotel Format not admitted
+
+  /room/{roomId}:
+    delete:
+      tags:
+        - Room
+      summary: Delete an instance of a Room
+      operationId: deleteRoom
+      description: For the Hotel to delete Rooms from the platform.
+      parameters:
+        - name: roomId
+          in: path
+          description: The UUID of the room to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Room deleted successfully
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not found - No Room with such UUID exists
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /reservation:
+    post:
+      tags:
+        - Reservation
+      summary: Create a new Reservation
+      operationId: addReservation
+      description: Add a new Reservation to the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reservation"
+      responses:
+        '201':
+          description: Reservation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        '400':
+          description: Bad request - Format not accepted
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Reservation
+      summary: Update reservation by ID
+      operationId: editReservation
+      description: Updates a reservation based on its unique ID.
+      parameters:
+        - name: reservationId
+          in: path
+          description: The UUID of the reservation to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reservation"
+      responses:
+        '200':
+          description: Reservation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        '400':
+          description: Bad Request - Null field
+        '404':
+          description: Reservation not found
+
+  /reservation/{reservationId}:
+    get:
+      tags:
+        - Reservation
+      summary: Get a Reservation
+      operationId: getReservation
+      description: Retrieves a Reservation by id from the database
+      parameters:
+        - name: reservationId
+          in: path
+          description: The UUID of the Reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reservation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        '404':
+          description: Not Found - No reservation with the specified uuid exists
+
+    delete:
+      tags:
+        - Reservation
+      summary: Delete an instance of a Reservation
+      operationId: deleteReservation
+      description: Deletes a Reservation by id from the database
+      parameters:
+        - name: reservationId
+          in: path
+          description: The UUID of the Reservation
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reservation deleted successfully
+        '404':
+          description: Not Found - No reservation with the specified uuid exists
+
+  /feedback:
+    post:
+      tags:
+        - Feedback
+      summary: Create a new Feedback
+      operationId: addFeedback
+      description: Add a new Feedback to the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Feedback"
+      responses:
+        '200':
+          description: Feedback created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feedback"
+        '400':
+          description: Bad Request - Format not allowed
+  
+  /feedback/{feedbackId}:
+    delete:
+      tags:
+        - Feedback
+      summary: Delete an instance of a Feedback
+      operationId: deleteFeedback
+      description: Delete a Feedback of a Hotel by id
+      parameters:
+        - name: feedbackId
+          in: path
+          description: The id of the Feedback to be deleted
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Feedback deleted successfully
+        '404':
+          description: No Feedback with that id exists
+
+components:
+  schemas:
+    Hotel:
+      type: object
+      properties:
+        hotel_id:
+          type: string
+          format: uuid
+        hotel_name:
+          type: string
+        hotel_location:
+          $ref: '#/components/schemas/Location'
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+        feedbacks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feedback'
+
+    Feedback:
+      type: object
+      properties:
+        feedback_id:
+          type: string
+          format: uuid
+        hotel:
+          $ref: '#/components/schemas/Hotel'
+        stars:
+          type: integer
+        comment:
+          type: string
+
+    Room:
+      type: object
+      properties:
+        room_id:
+          type: string
+          format: uuid
+        hotel:
+          $ref: '#/components/schemas/Hotel'
+        room_number:
+          type: integer
+        type:
+          type: integer
+        price:
+          type: integer
+        reservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+    
+    Reservation:
+      type: object
+      properties:
+        reservation_id:
+          type: string
+          format: uuid
+        room:
+          $ref: '#/components/schemas/Room'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
